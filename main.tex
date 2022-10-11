@@ -1,0 +1,1719 @@
+\documentclass{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2022
+
+
+% ready for submission
+% \usepackage{neurips_2022}
+
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%     \usepackage[preprint]{neurips_2022}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+% \usepackage{neurips_2022}
+\usepackage[final]{neurips_2022}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2022}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{here}
+
+\usepackage[hang,small,bf]{caption}
+\usepackage[subrefformat=parens]{subcaption}
+\captionsetup{compatibility=false}
+
+\usepackage[toc,page,header]{appendix}
+\usepackage{minitoc}
+
+% Make the "Part I" text invisible
+\renewcommand \thepart{}
+\renewcommand \partname{}
+
+\definecolor{my-theme}{rgb}{0.372,0.537,0.537}
+
+%%%%%%%%%%%%% source code %%%%%%%%%%%%%%%
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[export]{adjustbox}
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{On the Effect of Pre-training for Transformer in Different Modality on Offline Reinforcement Learning}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{
+  Shiro Takagi \thanks{
+  \href{https://t46.github.io/}{https://t46.github.io/}\\
+  \hspace*{1.5em}
+  Code is available at 
+  \href{https://github.com/t46/pre-training-different-modality-offline-rl}{https://github.com/t46/pre-training-different-modality-offline-rl}.\\
+  \hspace*{1.5em}
+  LaTeX source is available at 
+  \href{https://github.com/t46/paper-pre-training-different-modality-offline-rl}{https://github.com/t46/paper-pre-training-different-modality-offline-rl}.
+  } \\
+  Independent Researcher \\
+  \texttt{takagi4646@gmail.com}
+}
+
+
+\begin{document}
+\doparttoc % Tell to minitoc to generate a toc for the parts
+\faketableofcontents % Run a fake tableofcontents command for the partocs
+
+% \part{} % Start the document part
+% \parttoc % Insert the document TOC
+
+
+\maketitle
+
+
+\begin{abstract}
+  We empirically investigate how pre-training on data of different modalities, such as language and vision, affects fine-tuning of Transformer-based models to Mujoco offline reinforcement learning tasks. Analysis of the internal representation reveals that the pre-trained Transformers acquire largely different representations before and after pre-training, but acquire less information of data in fine-tuning than the randomly initialized one. A closer look at the parameter changes of the pre-trained Transformers reveals that their parameters do not change that much and that the bad performance of the model pre-trained with image data could partially come from large gradients and gradient clipping. To study what information the Transformer pre-trained with language data utilizes, we fine-tune this model with no context provided, finding that the model learns efficiently even without context information. Subsequent follow-up analysis supports the hypothesis that pre-training with language data is likely to make the Transformer get context-like information and utilize it to solve the downstream task.
+\end{abstract}
+
+\input{chapters/introduction}
+\input{chapters/related_works}
+\input{chapters/background}
+\input{chapters/exp_setup}
+\input{chapters/results}
+\input{chapters/discussion}
+
+% \section*{Acknowledgments}
+\begin{ack}
+We thank DEEPCORE Inc. for providing the computational resource.
+\end{ack}
+
+\bibliographystyle{unsrt}
+\bibliography{ref}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Checklist}
+\begin{enumerate}
+
+
+\item For all authors...
+\begin{enumerate}
+  \item Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
+    \answerYes{}
+  \item Did you describe the limitations of your work?
+    \answerYes{Section \ref{section:discussion}}
+  \item Did you discuss any potential negative societal impacts of your work?
+    \answerYes{Section \ref{section:discussion}}
+  \item Have you read the ethics review guidelines and ensured that your paper conforms to them?
+    \answerYes{}
+\end{enumerate}
+
+
+\item If you are including theoretical results...
+\begin{enumerate}
+  \item Did you state the full set of assumptions of all theoretical results?
+    \answerNA{}
+        \item Did you include complete proofs of all theoretical results?
+    \answerNA{}
+\end{enumerate}
+
+
+\item If you ran experiments...
+\begin{enumerate}
+  \item Did you include the code, data, and instructions needed to reproduce the main experimental results (either in the supplemental material or as a URL)?
+    \answerYes{\href{https://github.com/t46/pre-training-different-modality-offline-rl}{https://github.com/t46/pre-training-different-modality-offline-rl}}
+  \item Did you specify all the training details (e.g., data splits, hyperparameters, how they were chosen)?
+    \answerYes{Appendix \ref{appendix:training-detail}}
+        \item Did you report error bars (e.g., with respect to the random seed after running experiments multiple times)?
+    \answerYes{}
+        \item Did you include the total amount of compute and the type of resources used (e.g., type of GPUs, internal cluster, or cloud provider)?
+    \answerYes{Appendix \ref{appendix:details-for-computation}}
+\end{enumerate}
+
+
+\item If you are using existing assets (e.g., code, data, models) or curating/releasing new assets...
+\begin{enumerate}
+  \item If your work uses existing assets, did you cite the creators?
+    \answerYes{All existing assets we used are mentioned in footnote or References.}
+  \item Did you mention the license of the assets?
+    \answerYes{Appendix \ref{appendix:licence}}
+  \item Did you include any new assets either in the supplemental material or as a URL?
+    \answerNA{}
+  \item Did you discuss whether and how consent was obtained from people whose data you're using/curating?
+    \answerYes{Appendix \ref{appendix:licence}}
+  \item Did you discuss whether the data you are using/curating contains personally identifiable information or offensive content?
+    \answerNA{}
+\end{enumerate}
+
+
+\item If you used crowdsourcing or conducted research with human subjects...
+\begin{enumerate}
+  \item Did you include the full text of instructions given to participants and screenshots, if applicable?
+    \answerNA{}
+  \item Did you describe any potential participant risks, with links to Institutional Review Board (IRB) approvals, if applicable?
+    \answerNA{}
+  \item Did you include the estimated hourly wage paid to participants and the total amount spent on participant compensation?
+    \answerNA{}
+\end{enumerate}
+
+
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\appendix
+\addcontentsline{toc}{section}{Appendix} % Add the appendix text to the document TOC
+\part{Appendix} % Start the appendix part
+\parttoc % Insert the appendix TOC
+
+\section{Fine-Tuning Result for Sanity Check}
+\label{appendix:fine-tuning-result}
+We compare our performance results to those of previous studies to ensure that they are not  far off from the results of the prior study \cite{reid2022can}, the result of which is shown in Table \ref{table:sanity-check}. Following the previous studies \cite{fu2020d4rl,chen2021decision,reid2022can}, we report the normalized score of mean return: $100 \times \frac{\text{score} - \text{random score}}{\text{expert score} - \text{random score}}$, where \textit{random score} is mean return generated by a random policy and \textit{expert score} is generated by a policy trained by Soft Actor-Critic \cite{haarnoja2018soft}. Mean return is the sum of rewards averaged over trajectory.
+For further details of the datasets and metrics, please refer to the paper that proposes D4RL \cite{fu2020d4rl}. Although the previous work \cite{reid2022can} used several techniques to improve the performance, e.g. language model co-training, the extension of positional embedding, and similarity encouragement, we do not employ any of these techniques so that we study the pure effect of pre-training. The training details are described in Appendix \ref{appendix:training-detail}
+
+The result for the previous work is the average and standard deviation of three random seeds, while our result is those of two random seeds. The aim of this comparison is just to confirm that our result is not too pathological, checking soundness with two seeds would be valid enough. For reference, we also include the results of the Decision Transformer (DT) since the randomly initialized model (Random Init) is a large Decision Transformer. Following the previous study \cite{reid2022can}, which says that it conducted early stopping, we show the result of the best checkpoint in 40 epoch checkpoints. The result shows that our result is not too far away from the previous work, ensuring that the models of the subject of our analysis are valid enough.
+
+\section{Training Details}
+\label{appendix:training-detail}
+Hyperparameters are determined following previous study \cite{reid2022can}. The hyperparameters and other setups for fine-tuning the model are summarized in Table \ref{table:training-configuration}. The number of layers is 12 for GPT2 and randomly initialized model and 24 for iGPT. The other setup not specified, including $\beta$ of Adam optimizer \cite{KingmaB14} and model initialization scheme follows Pytorch default ones or the default values of optional arguments in the scripts that our experiment is based on \footnote{\lstinline{experiment.py} in the following repository:\\
+\href{https://github.com/machelreid/can-wikipedia-help-offline-rl/blob/main/code/experiment.py}{https://github.com/machelreid/can-wikipedia-help-offline-rl/blob/main/code/experiment.py}}. We do not do any pre-training ourselves, but use publicly available pre-trained models explained in Section \ref{section:background}. 
+
+Each model is trained to minimize the mean squared loss between its predicted actions $\hat{\bm{a}}_t$ and the true actions $\bm{a}_t$. To get the big picture of how fine-tuning of GPT-based models to offline RL data is conducted, please refer to the pseudo-code of the previous work \cite{chen2021decision}.
+
+The D4RL mujoco task used as offline RL data for our analysis has \textit{expert}, \textit{medium}, \textit{medium-replay}, \textit{medium-expert}, and \textit{random} datasets. The \textit{expert} dataset is the one trained by Soft Actor-Critic \cite{haarnoja2018soft}, \textit{medium} is the one partially trained by Soft Actor-Critic and was stopped early, \textit{medium-replay} is the one accumulated in the replay buffer before the model reached \textit{medium}'s level, and \textit{medium-expert} is a mixture of \textit{medium} and \textit{expert} results. The \textit{random} dataset is the trajectory collected by the random policy. We conducted our experiments on the \textit{medium} data set since it was used by the previous study \cite{reid2022can} and our analysis is based on the observations of this previous study.
+The \textit{medium} dataset we used is 1 million time steps collected by the policy explained above. For the detail of the dataset, please refer to the original paper \cite{fu2020d4rl}.
+
+
+\begin{table}[H]
+\caption{Training configuration.}
+\label{table:training-configuration}
+\centering
+\begin{tabular}{ll}
+\toprule
+\cmidrule(r){1-2}
+\# Layers & 12 \\
+\midrule
+Emb. Dim. & 768 \\
+\midrule
+\# Attention Heads & 1 \\
+\midrule
+Batch size & 64 \\
+\midrule
+Context & 20 \\
+\midrule
+Return-to-go conditioning & 6000 HalfCheetah \\
+& 3600 Hopper \\
+& 5000 Walker \\
+\midrule
+Dropout & $0.2$ \\
+\midrule
+Learning rate & $1e-4$ \\
+\midrule
+LR Warmup & 5000 steps \\
+\midrule
+Epoch & 40 \\
+\midrule
+\# Steps per Epoch & 2500 \\
+\midrule
+Optimizer & Adam \\
+\midrule
+Weight Decay & $1e-4$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Model Architecture and Module Names}
+In the following sections, we use the module names of our models (\lstinline{gpt2} and \lstinline{openai/imagegpt-small}) to describe the experimental details. Thus, for the reference, we show the model architecture we use and the names of the modules of the model. We show that of \lstinline{gpt2} but the configuration is the same for \lstinline{openai/imagegpt-small} except for the number of Transformer blocks. For the detailed configurations of pre-trained models, please refer to the following links:
+\begin{itemize}
+    \item \lstinline{gpt2}: \href{https://huggingface.co/gpt2}{https://huggingface.co/gpt2}
+    \item \lstinline{openai/imagegpt-small}: \href{https://huggingface.co/openai/imagegpt-small}{https://huggingface.co/openai/imagegpt-small}
+\end{itemize}
+We show the model architecture below, following the Pytorch format:  
+
+\begin{lstlisting}[language=Python, caption=Model architecture.]
+DecisionTransformer(
+  (transformer): GPT2Model(
+    (wte): Embedding(50257, 768)
+    (wpe): Embedding(1024, 768)
+    (drop): Dropout(p=0.1, inplace=False)
+    (h): ModuleList(
+      (0): GPT2Block(
+        (ln_1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+        (attn): GPT2Attention(
+          (c_attn): Conv1D()
+          (c_proj): Conv1D()
+          (attn_dropout): Dropout(p=0.1, inplace=False)
+          (resid_dropout): Dropout(p=0.2, inplace=False)
+        )
+        (ln_2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+        (mlp): GPT2MLP(
+          (c_fc): Conv1D()
+          (c_proj): Conv1D()
+          (act): NewGELUActivation()
+          (dropout): Dropout(p=0.2, inplace=False)
+        )
+      )
+      (1): GPT2Block(
+        (ln_1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+        (attn): GPT2Attention(
+          (c_attn): Conv1D()
+          (c_proj): Conv1D()
+          (attn_dropout): Dropout(p=0.1, inplace=False)
+          (resid_dropout): Dropout(p=0.2, inplace=False)
+        )
+        (ln_2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+        (mlp): GPT2MLP(
+          (c_fc): Conv1D()
+          (c_proj): Conv1D()
+          (act): NewGELUActivation()
+          (dropout): Dropout(p=0.2, inplace=False)
+        )
+      )
+      (2): GPT2Block(
+      .
+      .
+      .
+      )
+      (11): GPT2Block(
+        (ln_1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+        (attn): GPT2Attention(
+          (c_attn): Conv1D()
+          (c_proj): Conv1D()
+          (attn_dropout): Dropout(p=0.1, inplace=False)
+          (resid_dropout): Dropout(p=0.2, inplace=False)
+        )
+        (ln_2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+        (mlp): GPT2MLP(
+          (c_fc): Conv1D()
+          (c_proj): Conv1D()
+          (act): NewGELUActivation()
+          (dropout): Dropout(p=0.2, inplace=False)
+        )
+      )
+    )
+    (ln_f): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+  )
+  (embed_timestep): Embedding(1000, 768)
+  (embed_return): Linear(in_features=1, out_features=768, bias=True)
+  (embed_state): Linear(in_features=11, out_features=768, bias=True)
+  (embed_action): Linear(in_features=3, out_features=768, bias=True)
+  (embed_ln): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+)
+\end{lstlisting}
+
+Among the above modules, for our analysis, we focus on the modules in \lstinline{DecisionTransformer.transformer.h}. We summarize the module-related notations used in this paper below for reference:
+\begin{itemize}
+    \item \textit{Transformer blocks}: modules directly under
+    \lstinline{DecisionTransformer.transformer.h}
+        \begin{itemize}
+            \item e.g. \lstinline{DecisionTransformer.transformer.h[0]}.
+        \end{itemize}
+    \item \textit{Outputs of blocks}: outputs of \lstinline{mlp.dropout} of blocks.
+        \begin{itemize}
+            \item e.g. \lstinline{DecisionTransformer.transformer.h[0].mlp.dropout}.
+        \end{itemize}
+    \item \textit{Layers}: modules under Transformer blocks.
+        \begin{itemize}
+            \item e.g. \lstinline{DecisionTransformer.transformer.h[0].attn.c_attn}.
+        \end{itemize}
+    \item \textit{Parameter set}: parameters of each layer.
+        \begin{itemize}
+            \item e.g. \lstinline{DecisionTransformer.transformer.h[0].ln_1.weight}.
+        \end{itemize}
+\end{itemize}
+Note that these notations are sometimes used interchangeably as long as it doesn't significantly deteriorate the readability. 
+
+\section{Activation Similarity}
+\label{appendix:activation-similarity}
+
+\subsection{Details of Experiments}
+\label{appendix:detail-of-experiments-activation-similarity}
+
+We randomly sample 100 samples and compute unbiased estimators \cite{kornblith2019similarity} of linear CKA for these 100 activation vectors. The activation to be analyzed are outputs from all \textit{layers}.
+In the Decision Transformer, the effective total input length is context length $K$ times the number of token types $(\hat{R}, \bm{s}, \bm{a})$. As a result, the shape of the activation obtained at each layer is \lstinline{(batch size, 3x context length, embedding dimension)}. In this study, we compute the CKA for the activity of shape \lstinline{(batch size, embedding dimension)} that corresponds to the last time step in the context of return-to-go, state, and action, respectively. In other words, noting activation as in the form of python NumPy array \lstinline{activation}, we obtain \lstinline{activation[:, -1, :]}, \lstinline{activation[:, -2, :]}, and \lstinline{activation[:, -3, :]}. 
+In the previous work analyzing the internal representation of Transformer \cite{wu-etal-2020-similarity}, the dimension of context and representation seem to be concatenated:  \lstinline{activation.contiguous().view(activation.shape[0] -1)}. Since the representation obtained in this way is hard to interpret, we decide to use the way we described above to obtain activation. A descriptive diagram for activation that we compute CKA about is shown in Fig. \ref{fig:diagram_cka_activation}. The design of the diagram is based on a previous study \cite{chen2021decision}. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figs/cka_activation.pdf}
+    \caption{Activation we consider to compute CKA.}
+    \label{fig:diagram_cka_activation}
+\end{figure}
+
+Each rectangle colored in red is an activation we consider. The left-most rectangles are the activation with return-to-go as input, the middle rectangles are the that with status as input, and the right-most rectangles are that with action as input. Since we consider only the last in the context, the rectangles are drawn only where the tokens of the K-th step are received as input. In Section \ref{section:activation-similarity}, we show the results of activation that $\bm{s}_K$ is fed in the diagram.
+
+\subsection{Centered Kernel Alignment (CKA)}
+\label{appendix:cka}
+We show the definition of Centered Kernel Alignment (CKA). Given two activation vectors $\bm{X} \in \mathbb{R}^{m \times p_1}$ and $\bm{Y} \in \mathbb{R}^{m \times p_1}$, where $m$ is data size and $p_1$ and $p_2$ are dimensions of hidden layers, the CKA of the two representations is as follows:
+ \begin{equation}
+     \text{CKA} = \frac{\text{HSCI}(\bm{K}, \bm{L})}{\sqrt{\text{HSCI}(\bm{K}, \bm{K})\text{HSCI}(\bm{L}, \bm{L})}},
+ \end{equation}
+ where HSCI is the Hilbert-Schmidt independence criterion \cite{gretton2007kernel} and $\bm{K}_{ij} = k(\bm{x}_i, \bm{x}_j)$ and $\bm{L}_{ij} = l(\bm{x}_i, \bm{x}_j)$ are kernels. Particularly, linear CKA is defined as follows:
+  \begin{equation}
+     \text{linear CKA} = \frac{||\bm{Y}^{\top} \bm{X}||_F^2}{||\bm{X}^{\top} \bm{X}||_F||\bm{Y}^{\top}\bm{Y}||_F},
+ \end{equation}
+ where $||\cdot||_F$ is the Frobenius norm. For further details, please refer to the previous work \cite{kornblith2019similarity}.
+ 
+\subsection{Layer Names Whose CKA is Above a Threshold}
+\label{appendix:layer-name-cka}
+In Section \ref{section:activation-similarity}, we say we observe that most of the high CKAs of Fig. \ref{fig:cka_plot_gpt2_dt} (b), which are greater than 0.38, are those of layer normalization. The reason we set this seemingly arbitrary threshold is that we observe higher layers in a block than other layers in Fig. \ref{fig:cka_plot_gpt2_dt} and want to identify these layers. By eye inspection, we find the threshold over which all these points are included in Fig. \ref{fig:cka_plot_gpt2_dt} is around 0.38 and so we select this value as a threshold. 
+Here, we show the raw result of the observation. The layer name list is shown below:
+\begin{lstlisting}[language=Python, caption=Layer names whose CKA is above a threshold]
+0.ln_1, 0.attn.c_attn, 0.ln_2, 0.mlp.c_fc, 0.mlp.c_proj, 0.mlp.dropout
+1.ln_1, 1.attn.c_attn, 1.ln_2
+2.ln_1,                2.ln_2
+3.ln_1,                3.ln_2, 3.mlp.c_fc
+4.ln_1, 4.attn.c_attn, 4.ln_2
+5.ln_1, 5.attn.c_attn, 5.ln_2
+6.ln_1, 6.attn.c_attn, 6.ln_2
+7.ln_1, 7.ln_2
+8.ln_1,                8.ln_2
+9.ln_1, 9.ln_2
+10.ln_1, 10.attn.c_attn, 10.ln_2
+11.ln_1.                 11.ln_2
+\end{lstlisting}
+Note that, for example, \lstinline{0.ln_1} is the first layer normalization layer (\lstinline{ln_1}) of the first transformer block (\lstinline{0}). We observe that 24 of 34 layers are layer norm modules (\lstinline{ln_1} and \lstinline{ln_2}).
+
+\subsection{CKA Between Different Models}
+\label{appendix:cka-different-models}
+To check if pre-trained models and the randomly initialized model converge to a similar representation or not, we compute the CKA between representations of fine-tuned these models. The result is shown in Fig. \ref{fig:cka_gpt2_dt_igpt}, where (a) is the CKA between GPT2 and iGPT, (b) is that between GPT2 and random initialization, and (c) is that between iGPT and random initialization. We observe that CKA values in these heat maps are small, confirming that different models learn different representations. 
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtgpt2_hopper_medium_666_state.png}
+        \subcaption{Random Init. vs GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtigpt_hopper_medium_666_state.png}
+        \subcaption{Random Init. vs iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2igpt_hopper_medium_666_state.png}
+        \subcaption{GPT2 vs iGPT}
+    \end{minipage}
+    \caption{CKA similarity across layers between different fine-tuned models.}
+    \label{fig:cka_gpt2_dt_igpt}
+\end{figure}
+
+\subsection{CKA Between Different Layers in a Model}
+\subsubsection{Post-Fine-Tuning}
+In Appendix \ref{appendix:cka-different-models}, we find that each layer of the pre-trained model and randomly initialized model learn representation differently. In this section, we delve into what representation these models acquire. For that purpose, we compute CKA values of the different layers in the same model after fine-tuning. The result for the state input token with the \textit{Hopper-medium} dataset is shown in Fig. \ref{fig:cka_40_gpt2_igpt_dt}. The results for other environments and input tokens are in Appendix \ref{appendix:results-for-other-conditions-activation-similarity}.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2gpt2_hopper_medium_666_state.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_igptigpt_hopper_medium_666_state.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtdt_hopper_medium_666_state.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same models (epoch 40).}
+    \label{fig:cka_40_gpt2_igpt_dt}
+\end{figure}
+
+Comparing the CKA matrix of pre-trained models (Fig. \ref{fig:cka_40_gpt2_igpt_dt} (a) and Fig. \ref{fig:cka_40_gpt2_igpt_dt} (b)) with that of the randomly initialized model (Fig. \ref{fig:cka_40_gpt2_igpt_dt} (c)), we observe that the randomly initialized model has an almost equally divided lattice structure, while pre-trained models have some block-like structure. In particular, the shallow blocks and the middle to top blocks of language-pre-trained model have a bit similar representation, respectively. 
+This result indicates that probably layers of random initialization process information separately, while some layers of language-pre-trained models coordinate to represent information.
+
+\subsubsection{Pre-Fine-Tuning}
+For just reference, we put the CKA matrix of pre-trained models before fine-tuning as well. The result is shown in Fig. \ref{fig:cka_0_gpt2_igpt_dt}. We observe the grid structure at the initial state as well.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_0_0_gpt2gpt2_hopper_medium_666_state.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_0_0_igptigpt_hopper_medium_666_state.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_0_0_dtdt_hopper_medium_666_state.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same models (epoch 0).}
+    \label{fig:cka_0_gpt2_igpt_dt}
+\end{figure}
+
+\section{Mutual Information Between Hidden Representation and Data}
+\label{appendix:mutual-information-between-hidden-representation-and-input-and-label}
+
+\subsection{Details of Experiments}
+\label{appendix:detail-of-experiments-mutual-information}
+
+MINE, the definition of which is explained in Appendix \ref{appendix:definition-mutual-information}, estimates mutual information by training a neural network. The neural network we use is a feed-forward ReLU network with two hidden layers of width 400. We train the neural network for 1000 iterations by Adam optimizer with a learning rate of $1e-4$. Same as in Appendix \ref{appendix:detail-of-experiments-activation-similarity}, we randomly sample 100 trajectories and use them to obtain the activation. Thus, the dataset for mutual information calculation is the pair between these 100 activation vectors and 100 trajectories for $\hat{I}(X; T)$ and 100 last action vectors for $\hat{I}(Y; T)$. If the estimated value is \lstinline{NaN}, we exclude the point from the figure.
+
+The descriptive diagram that shows hidden activation and data we consider to compute estimated mutual information is Fig. \ref{fig:diagram_mutual_information_context}, where (a) is for $\hat{I}(X; T)$ and (b) is for $\hat{I}(Y; T)$. This is an example of mutual information for the deep Transformer block. For the middle block, we use block 6 for GPT2 and random initialization and block 12 for iGPT. Specifically, the outputs of the shallow, middle, and deep Transformer blocks are the outputs of \lstinline{0.mlp.dropout}, \lstinline{6.mlp.dropout}, and \lstinline{11.mlp.dropout} for GPT2 and randomly initialized models and \lstinline{0.mlp.dropout}, \lstinline{12.mlp.dropout}, and \lstinline{23.mlp.dropout} for iGPT.
+
+\begin{figure}[ht]
+    \centering
+    \begin{minipage}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figs/diagram_mi_x.pdf}
+    \subcaption{$\hat{I}(X; T)$}
+    \end{minipage}
+    \hspace{1cm}
+    \begin{minipage}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figs/diagram_mi_y.pdf}
+    \subcaption{$\hat{I}(Y; T)$}
+    \end{minipage}
+    \caption{Data and activation we consider to compute estimated mutual information.}
+    \label{fig:diagram_mutual_information_context}
+\end{figure}
+
+\subsection{Mutual Information Neural Estimation (MINE)}
+\label{appendix:definition-mutual-information}
+Given random variables $X$ and $T$, whose joint probability is $\mathbb{P}_{X T}$ and marginal distributions are $\mathbb{P}_{X}=\int_{\mathcal{T}} \mathrm{d} \mathbb{P}_{X T}$ and $\mathbb{P}_{T}=\int_{\mathcal{X}} \mathrm{d} \mathbb{P}_{X T}$, the mutual information of $X$ and $T$ are as follows:
+\begin{equation}
+    I(X ; T)=\int_{\mathcal{X} \times \mathcal{T}} \log \frac{\mathrm{d} \mathbb{P}_{X T}}{\mathrm{d} \mathbb{P}_{X} \otimes \mathbb{P}_{T}} \mathrm{d} \mathbb{P}_{X T}.
+\end{equation}
+
+Denoting neural network with parameters $\bm{\theta} \in \Theta$ by $\text{NN}_{\bm{\theta}}$ and the empirical distribution of $\mathbb{P}$ characterized by $n$ i.i.d. samples by $\hat{\mathbb{P}}^{(n)}$, MINE is defined as follows \cite{pmlr-v80-belghazi18a}:
+\begin{equation}
+\hat{I}(X ; T)_{n}=\sup _{\theta \in \Theta} \mathbb{E}_{\mathbb{P}_{X T}^{(n)}}\left[\text{NN}_{\theta}\right]-\log \left(\mathbb{E}_{\mathbb{P}_{X}^{(n)} \otimes \hat{\mathbb{P}}_{T}^{(n)}}\left[e^{\text{NN}_{\theta}}\right]\right).
+\end{equation}
+Please refer to the previous study \cite{pmlr-v80-belghazi18a} for the details.
+
+
+\subsection{Mutual Information Without Considering Context}
+As a complementary analysis, we also calculate the estimated mutual information between hidden representation and $\bm{s}_t$ and $\bm{a}_t$. In other words, we compute $\hat{I}(\bm{s}_t;  T_l(\bm{s}_t))$ and $\hat{I}(\bm{a}_t;  T_l(\bm{s}_t))$ as $\hat{I}(X; T)$ and $\hat{I}(Y; T)$ for all time steps in the context $t = 1, ..., K$. Then, we take an average of them over the context. The descriptive diagram is shown in Fig. \ref{fig:diagram_mutual_information_no_context}.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figs/diagram_mi_x_no_context.pdf}
+    \subcaption{$\hat{I}(X; T)$}
+    \end{minipage}
+    \hspace{1cm}
+    \begin{minipage}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figs/diagram_mi_y_no_context.pdf}
+    \subcaption{$\hat{I}(Y; T)$}
+    \end{minipage}
+    \caption{Data and activation we consider to compute estimated mutual information.}
+    \label{fig:diagram_mutual_information_no_context}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_state_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \subcaption{$\hat{I}(X; T)$}
+    \end{minipage}
+    \begin{minipage}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_action_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \subcaption{$\hat{I}(Y; T)$}
+    \end{minipage}
+    \caption{Estimated mutual information between hidden representation and state and action.}
+    \label{fig:mutual_information_no_context}
+\end{figure}
+
+The result for \textit{Hopper-medium} is shown in Fig. \ref{fig:mutual_information_no_context}. Each point indicates the estimated mean mutual information and the shaded area is the standard deviation. Just as we did in Section \ref{section:activation-similarity}, we take an average over two adjacent elements for iGPT for comparison. We again observe that the randomly initialized model generally has more information on input and label, and iGPT has almost nothing about label-related information.
+
+\section{Parameter Similarity}
+\label{appendix:parameter-similarity}
+
+\subsection{Details of Experiments}
+\label{appendix:detail-of-experiments-parameter-similarity}
+The parameters considered in the analysis are those in Transformer blocks (\lstinline{DecisionTransformer.transformer.h}). We concatenate all these parameters into a single vector and compute $l2$ distance and cosine similarity for this vector. For the post-fine-tuning model in Section \ref{section:parameter-similarity}, we use the model trained with the \textit{Hopper-medium} dataset. The results for other environments are in Appendix \ref{appendix:results-for-other-conditions-parameter-similarity}. 
+
+\subsection{Ticks' Labels of Figures \ref{fig:param-dist} and \ref{fig:param-cos}}
+\label{appendix:parameter-name}
+The labels of ticks of Figs. \ref{fig:param-dist} and \ref{fig:param-cos} in Section \ref{section:parameter-similarity} correspond to all \textit{parameter sets}. For example, one of the parameter sets is \lstinline{0.ln_1.weight}: this is the weight vector of the layer normalization in the first (\lstinline{0}) transformer block (\lstinline{h}). The labels for ticks of GPT2 and the randomly initialized model are summarized below:
+
+\begin{lstlisting}[language=Python, caption=Label list of ticks.]
+ '0.ln_1.weight',
+ '0.ln_1.bias',
+ '0.attn.c_attn.weight',
+ '0.attn.c_attn.bias',
+ '0.attn.c_proj.weight',
+ '0.attn.c_proj.bias',
+ '0.ln_2.weight',
+ '0.ln_2.bias',
+ '0.mlp.c_fc.weight',
+ '0.mlp.c_fc.bias',
+ '0.mlp.c_proj.weight',
+ '0.mlp.c_proj.bias',
+ '1.ln_1.weight',
+ '1.ln_1.bias',
+ '1.attn.c_attn.weight',
+ '1.attn.c_attn.bias',
+ '1.attn.c_proj.weight',
+ '1.attn.c_proj.bias',
+ '1.ln_2.weight',
+ '1.ln_2.bias',
+ '1.mlp.c_fc.weight',
+ '1.mlp.c_fc.bias',
+ '1.mlp.c_proj.weight',
+ '1.mlp.c_proj.bias',
+ '2.ln_1.weight',
+ '2.ln_1.bias',
+ '2.attn.c_attn.weight',
+ '2.attn.c_attn.bias',
+ '2.attn.c_proj.weight',
+ '2.attn.c_proj.bias',
+ '2.ln_2.weight',
+ '2.ln_2.bias',
+ '2.mlp.c_fc.weight',
+ '2.mlp.c_fc.bias',
+ '2.mlp.c_proj.weight',
+ '2.mlp.c_proj.bias',
+ '3.ln_1.weight',
+ '3.ln_1.bias',
+ '3.attn.c_attn.weight',
+ '3.attn.c_attn.bias',
+ '3.attn.c_proj.weight',
+ '3.attn.c_proj.bias',
+ '3.ln_2.weight',
+ '3.ln_2.bias',
+ '3.mlp.c_fc.weight',
+ '3.mlp.c_fc.bias',
+ '3.mlp.c_proj.weight',
+ '3.mlp.c_proj.bias',
+ '4.ln_1.weight',
+ '4.ln_1.bias',
+ '4.attn.c_attn.weight',
+ '4.attn.c_attn.bias',
+ '4.attn.c_proj.weight',
+ '4.attn.c_proj.bias',
+ '4.ln_2.weight',
+ '4.ln_2.bias',
+ '4.mlp.c_fc.weight',
+ '4.mlp.c_fc.bias',
+ '4.mlp.c_proj.weight',
+ '4.mlp.c_proj.bias',
+ '5.ln_1.weight',
+ '5.ln_1.bias',
+ '5.attn.c_attn.weight',
+ '5.attn.c_attn.bias',
+ '5.attn.c_proj.weight',
+ '5.attn.c_proj.bias',
+ '5.ln_2.weight',
+ '5.ln_2.bias',
+ '5.mlp.c_fc.weight',
+ '5.mlp.c_fc.bias',
+ '5.mlp.c_proj.weight',
+ '5.mlp.c_proj.bias',
+ '6.ln_1.weight',
+ '6.ln_1.bias',
+ '6.attn.c_attn.weight',
+ '6.attn.c_attn.bias',
+ '6.attn.c_proj.weight',
+ '6.attn.c_proj.bias',
+ '6.ln_2.weight',
+ '6.ln_2.bias',
+ '6.mlp.c_fc.weight',
+ '6.mlp.c_fc.bias',
+ '6.mlp.c_proj.weight',
+ '6.mlp.c_proj.bias',
+ '7.ln_1.weight',
+ '7.ln_1.bias',
+ '7.attn.c_attn.weight',
+ '7.attn.c_attn.bias',
+ '7.attn.c_proj.weight',
+ '7.attn.c_proj.bias',
+ '7.ln_2.weight',
+ '7.ln_2.bias',
+ '7.mlp.c_fc.weight',
+ '7.mlp.c_fc.bias',
+ '7.mlp.c_proj.weight',
+ '7.mlp.c_proj.bias',
+ '8.ln_1.weight',
+ '8.ln_1.bias',
+ '8.attn.c_attn.weight',
+ '8.attn.c_attn.bias',
+ '8.attn.c_proj.weight',
+ '8.attn.c_proj.bias',
+ '8.ln_2.weight',
+ '8.ln_2.bias',
+ '8.mlp.c_fc.weight',
+ '8.mlp.c_fc.bias',
+ '8.mlp.c_proj.weight',
+ '8.mlp.c_proj.bias',
+ '9.ln_1.weight',
+ '9.ln_1.bias',
+ '9.attn.c_attn.weight',
+ '9.attn.c_attn.bias',
+ '9.attn.c_proj.weight',
+ '9.attn.c_proj.bias',
+ '9.ln_2.weight',
+ '9.ln_2.bias',
+ '9.mlp.c_fc.weight',
+ '9.mlp.c_fc.bias',
+ '9.mlp.c_proj.weight',
+ '9.mlp.c_proj.bias',
+ '10.ln_1.weight',
+ '10.ln_1.bias',
+ '10.attn.c_attn.weight',
+ '10.attn.c_attn.bias',
+ '10.attn.c_proj.weight',
+ '10.attn.c_proj.bias',
+ '10.ln_2.weight',
+ '10.ln_2.bias',
+ '10.mlp.c_fc.weight',
+ '10.mlp.c_fc.bias',
+ '10.mlp.c_proj.weight',
+ '10.mlp.c_proj.bias',
+ '11.ln_1.weight',
+ '11.ln_1.bias',
+ '11.attn.c_attn.weight',
+ '11.attn.c_attn.bias',
+ '11.attn.c_proj.weight',
+ '11.attn.c_proj.bias',
+ '11.ln_2.weight',
+ '11.ln_2.bias',
+ '11.mlp.c_fc.weight',
+ '11.mlp.c_fc.bias',
+ '11.mlp.c_proj.weight',
+ '11.mlp.c_proj.bias'
+\end{lstlisting}
+
+For iGPT, the number of transformer block is twice (from 0-11 to 0-23) but the configuration is the same.
+
+\section{Gradient Analysis}
+\label{appendix:gradient-analysis}
+
+\subsection{Details of Experiments}
+\label{appendix:detail-of-experiments-gradient-analysis}
+We randomly sample 100 samples for gradient norm in Fig. \ref{fig:grad-norm} and 50 samples for gradient confusion in Fig. \ref{fig:grad-confusion} and compute the gradient of the loss on each of these samples for all parameters of the models fine-tuned after 1 epoch. The bar plot of Fig. \ref{fig:grad-confusion} is the minimum of the $50 \times 50 = 2500$ cosine similarities. Each point of Fig. \ref{fig:grad-norm} corresponds to the gradient norm of each data sample in 100 gradient norms. The top of the box is the 1st quartile and the bottom of the box is the 3rd quartile of the points. The whiskers extend from the box by 1.5 times the inter-quartile range. For gradient clipping, we use a method in Pytorch \cite{Paszke19} and set the maximum norm to be $0.25$, following the previous work \cite{reid2022can}. 
+
+The process of creating Fig. \ref{fig:grad-norm-param-ratio} is as follows. We first compute gradient norms per parameter set and examine the bar plot that we will explain in Appendix \ref{appendix:gradient-norm-for-each-parameter}. Noticing that two peaks exist in the figure, we check the label of the parameter sets and find that they are \lstinline{0.ln_1.weight} and \lstinline{0.ln_1.bias}. Thus, we lump the remaining as \lstinline{others} and only show the ratio in the main body of the paper to tell readers the main finding from the observation in an easy-to-understand manner. The parameter sets considered to compute the parameter set-wise gradient norms are the same as those in Appendix \ref{appendix:parameter-name}.
+
+\subsection{Gradient Norm for Each Parameter}
+\label{appendix:gradient-norm-for-each-parameter}
+For visibility, we show only the ratio in Section \ref{section:gradient-analysis} as Fig. \ref{fig:grad-norm-param-ratio}. The full results for gradient norms of each parameter are shown in Fig. \ref{fig:param-norm-per-param}. The labels of the ticks on the x-axis are the same as that in Appendix \ref{appendix:parameter-name}. We immediately notice that the first two parameters (\lstinline{0.ln_1.weight} and \lstinline{0.ln_1.bias}) are much larger than the remains.
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_1_igpt_hopper_medium_666.pdf}
+    \caption{Gradient norm of iGPT's each parameter at epoch 1.}
+    \label{fig:param-norm-per-param}
+\end{figure}
+
+\subsection{Analysis of the Effect of Gradient Clipping}
+\label{appendix:gradient-clipping}
+In Section \ref{section:gradient-analysis}, we noted that large gradient and gradient clipping could be a cause of the bad performance of iGPT. To further explore this point, we conducted a simple experiment.
+
+The experiments of the previous study \cite{reid2022can} and our experiments both used a Pytorch function called \lstinline{torch.nn.utils.clip_grad_norm_}
+\footnote{
+Documentation of \lstinline{torch.nn.utils.clip_grad_norm_} : \\
+\href{https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html}{https://pytorch.org/docs/stable/generated/torch.nn.utils.clip\_grad\_norm\_.html}
+}
+for gradient clipping. This function divides each gradient by the total norm of all gradients and multiplies the clipping constant (gradient norm clipping). However, as we pointed out in Section \ref{section:gradient-analysis}, the gradient norm values are dominated by only a few parameters (the layer normalization layer in the first block). This large norm affects the normalization of all gradients, decreasing the informational value of most gradients. Therefore, we hypothesized that one of the possible reasons why iGPT is difficult to learn can be the use of \lstinline{torch.nn.utils.clip_grad_norm_ function}. 
+
+Thus we trained the image-pre-trained model without using gradient clipping. The basic experimental setting is the same as that of Section \ref{section:gradient-analysis} except that we trained the model for 10 epochs, instead of 40 epochs. The results are shown in Figs \ref{fig:action-error-igpt-no-grad-clip} and \ref{fig:mean-return-igpt-no-grad-clip} for action error and mean return, respectively. The x-axis is the epoch. These figures show that eliminating gradient clipping does not immediately solve the catastrophic performance at least up to 10 epochs. However, we did find that action error is much smaller for no gradient clipping condition, indicating that the learning process of it seems to be more stable and efficient than the clipping was applied. We also found that the return means seem to improve, albeit very slightly. Thus, we can conclude that gradient clipping is a cause of the bad performance of iGPT, though it does not seem to be critical. Exploring the critical factor that makes iGPT performance catastrophic is left a future work.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/actionerror_igpt_no_grad_clip_hopper_medium_666.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/actionerror_igpt_no_grad_clip_halfcheetah_medium_666.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/actionerror_igpt_no_grad_clip_walker2d_medium_666.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Action error: with gradient clipping v.s. without gradient clipping}
+    \label{fig:action-error-igpt-no-grad-clip}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_igpt_no_grad_clip_hopper_medium_666.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_igpt_no_grad_clip_halfcheetah_medium_666.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_igpt_no_grad_clip_walker2d_medium_666.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Mean return: with gradient clipping v.s. without gradient clipping}
+    \label{fig:mean-return-igpt-no-grad-clip}
+\end{figure}
+
+\section{Fine-Tuning with No Context Information}
+\label{appendix:dependency-on-context-informaiton}
+
+\subsection{Details of Experiments}
+\label{appendix:detail-of-experiments-dependency-on-context-informaiton}
+The configuration of the training is the same as that described in Appendix \ref{appendix:training-detail} except that the context is $1$ (no context). We evaluate the model per epoch and the normalized score in Table \ref{table:k=1-666-42} is the result of the best checkpoint in the 40 checkpoints. The mean return reported in Fig. \ref{fig:return-mean} and Table \ref{table:k=1-666-42} is the average of the returns over the trajectory. Table \ref{table:k=1-666-42} is the result of one random seed (seed = 666). The mean and standard deviation of the normalized score for the two seeds (seed = 666 \& 42) and the mean return of another seed (seed = 42) are reported in Appendix \ref{apendx:results-for-other-conditions-fine-tuning-with-no-context-information}.
+
+In this paper, we mean \textit{context} by the number of accessible time steps for a model to predict, following the previous study \cite{chen2021decision}. If the context length is $K$, the model can use inputs in past $K$ steps to predict the action at the current step, while the context length is 1 (no context), the model has to predict only from the current time step. 
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figs/context_K.pdf}
+    \subcaption{Context length is $K$}
+    \end{minipage}
+    \hspace{1cm}
+    \begin{minipage}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figs/context_1.pdf}
+    \subcaption{Context length is $1$}
+    \end{minipage}
+    \caption{Descriptive diagram to explain what we mean by \textit{context}.}
+    \label{fig:diagram_context}
+\end{figure}
+
+\subsection{Analysis of Why Randomly Initialized Model Fails for Hopper with No Context}
+
+In Section \ref{section:dependency-on-context-informaiton}, we observe that the performance of randomly initialized models for the Hopper environment is particularly worse than that for other environments (Table \ref{table:k=1-666-42}). In this Section, we further explore a possible cause of this observation.
+
+We speculate that this may be because \textit{how much of the range of context that needs to be looked at} changes depending on the data set. For example, prior studies on decision transformer reported that the effect of context varied depending on the task \cite{chen2021decision}. Improvement by context means that the context is important information for solving the task. Thus, it could be possible that Hopper is the dataset that requires more information from context than the other two data sets.
+
+As a test of the hypothesis, we randomly sampled a batch sample and calculated the mutual information between action and state or return-to-go at the same time step and compare them between different environments; note that this is the mutual information between the data, not between the data and representation. The higher the value of the mutual information, the higher the mutual dependence between state or return-to-go and action at the same time step. Hence, higher mutual information suggests that the model could predict action better only from the information at the current time step. 
+
+In particular, we sample 100 samples of context length $K = 20$. Then, for all time step $t$, we compute the estimated mutual information $\hat{I}(\bm{s}_t; \bm{a}_t)$ between state $\bm{s}_t$ and action $\bm{a}_t$ and that $\hat{I}(\hat{R}_t; \bm{a}_t)$ between return-to-go $\hat{R}_t$ and action. Other setup for mutual information estimation is the same as that of Section \ref{section:mutual-information-between-hidden-representation-and-input-and-label}. The result is shown in Fig \ref{fig:mutual-information-data}, where (a) is the box plot for the state and action and (b) is that for the return-to-go and action. The top of the box is the 1st quartile and the bottom of the box is the 3rd quartile of the points. The whiskers extend from the box by 1.5 times the inter-quartile range. Each point corresponds to different time step in the context. 
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/mi_data_state_action_medium_666.pdf}
+        \subcaption{$\hat{I}(\bm{s}_t; \bm{a}_t)$}
+    \end{minipage}
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/mi_data_rtg_action_medium_666.pdf}
+        \subcaption{$\hat{I}(\hat{R}_t; \bm{a}_t)$}
+    \end{minipage}
+    \caption{Mutual information between data at the same time step in trajectories}
+    \label{fig:mutual-information-data}
+\end{figure}
+
+We observe that the estimated mutual information between return-to-go and action is smaller on average for Hopper than for other environments (Fig. \ref{fig:mutual-information-data} (b)), though that between action and state does not differ that much (Fig. \ref{fig:mutual-information-data} (a)). Prior research has indicated that return-to-go information seems to be important for prediction \cite{reid2022can}. Hence, we can say that models have to use more information from the other steps in the context to solve the Hopper task than models do for other environments. This result supports our hypothesis above.
+
+\section{More In-Depth Analysis of Context Dependence}
+\label{appendix:internal-analysis-to-see-the-dependence-on-context}
+
+\subsection{Replacement by the Pre-Trained Block}
+\label{appendix:replacement}
+
+\subsubsection{Details of Experiments}
+\label{appendix:detail-of-experiments-replacement}
+The training configuration is the same as that of Section \ref{section:dependency-on-context-informaiton}.
+The smoothing factor of the exponential moving average for Fig. \ref{fig:learning_curve} is 0.8. The action error is the mean square loss between the true action $\bm{a}_t$ and the predicted action $\hat{\bm{a}}_t$. Considering that the goal of this experiment is to highlight the effect of pre-training, we train the model for 10 epochs for Hopper and 5 epochs for HalfCheetah and Walker2D because Fig. \ref{fig:return-mean} shows that the difference between the randomly initialized and pre-trained model is evident during these epochs. 
+
+\subsection{Attention Distance Analysis}
+\label{appendix:attention-distance}
+
+\subsubsection{Details of Experiments}
+\label{appendix:detail-of-experiments-attention-distance}
+In the main body of this paper, we mean \textit{attention distance} by \textit{average/mean attention distance} in the previous work \cite{dosovitskiy2020image,raghu2021vision}. Because we use only one attention head in this study, there is a single point per sample in Fig. \ref{fig:attention_distance_before_after_epoch_4}. We randomly sample 100 trajectory samples and compute attention for these trajectories. When calculating attention distance, we allow the model to access the context of $K=20$ length and compute the attention distance up to the length. Each point of the box plot (Fig. \ref{fig:attention_distance_before_after_epoch_4}) corresponds to the attention distance of each sample. The configuration for the box plot is the same as that in Appendix \ref{appendix:gradient-analysis}.
+
+\newpage
+
+\section{Results for Other Conditions}
+\label{appendix:results-for-other-conditions}
+
+\subsection{Activation Similarity}
+\label{appendix:results-for-other-conditions-activation-similarity}
+
+\subsubsection{CKA Between Pre and Post-Fine-Tuning}
+\label{appendix:results-for-other-conditions-cka-between-pre-and-post-fine-tuning}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_hopper_medium_666_action.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_halfcheetah_medium_666_action.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_walker2d_medium_666_action.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{CKA similarity of each layer between pre and post-fine-tuning (Action).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_hopper_medium_666_reward.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_halfcheetah_medium_666_reward.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_walker2d_medium_666_reward.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{CKA similarity of each layer between pre and post-fine-tuning (Return-to-go).}
+\end{figure}
+
+\subsubsection{CKA Between Pre and Post-Fine-Tuning (Seed = 42)}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_hopper_medium_42_state.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_halfcheetah_medium_42_state.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_walker2d_medium_42_state.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{CKA similarity of each layer between pre and post-fine-tuning (State, Seed = 42).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_hopper_medium_42_action.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_halfcheetah_medium_42_action.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_walker2d_medium_42_action.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{CKA similarity of each layer between pre and post-fine-tuning (Action, Seed = 42).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_hopper_medium_42_reward.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_halfcheetah_medium_42_reward.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_walker2d_medium_42_reward.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{CKA similarity of each layer between pre and post-fine-tuning (Return-to-go, Seed = 42).}
+\end{figure}
+
+
+\subsubsection{CKA Between Different Models}
+\label{appendix:results-for-other-conditions-cka-between-different-models}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtgpt2_hopper_medium_666_reward.png}
+        \subcaption{Random Init. vs GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtigpt_hopper_medium_666_reward.png}
+        \subcaption{Random Init. vs iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2igpt_hopper_medium_666_reward.png}
+        \subcaption{GPT2 vs iGPT}
+    \end{minipage}
+    \caption{CKA between different models (Hopper \& Return-to-go).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtgpt2_hopper_medium_666_action.png}
+        \subcaption{Random Init. vs GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtigpt_hopper_medium_666_action.png}
+        \subcaption{Random Init. vs iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2igpt_hopper_medium_666_action.png}
+        \subcaption{GPT2 vs iGPT}
+    \end{minipage}
+    \caption{CKA between different models (Hopper \& Action).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtgpt2_halfcheetah_medium_666_state.png}
+        \subcaption{Random Init. vs GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtigpt_halfcheetah_medium_666_state.png}
+        \subcaption{Random Init. vs iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2igpt_halfcheetah_medium_666_state.png}
+        \subcaption{GPT2 vs iGPT}
+    \end{minipage}
+    \caption{CKA between different models (HalfCheetah \& State).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtgpt2_halfcheetah_medium_666_reward.png}
+        \subcaption{Random Init. vs GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtigpt_halfcheetah_medium_666_reward.png}
+        \subcaption{Random Init. vs iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2igpt_halfcheetah_medium_666_reward.png}
+        \subcaption{GPT2 vs iGPT}
+    \end{minipage}
+    \caption{CKA between different models (HalfCheetah \& Return-to-go).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtgpt2_halfcheetah_medium_666_action.png}
+        \subcaption{Random Init. vs GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtigpt_halfcheetah_medium_666_action.png}
+        \subcaption{Random Init. vs iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2igpt_halfcheetah_medium_666_action.png}
+        \subcaption{GPT2 vs iGPT}
+    \end{minipage}
+    \caption{CKA between different models (HalfCheetah \& Action).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtgpt2_walker2d_medium_666_state.png}
+        \subcaption{Random Init. vs GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtigpt_walker2d_medium_666_state.png}
+        \subcaption{Random Init. vs iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2igpt_walker2d_medium_666_state.png}
+        \subcaption{GPT2 vs iGPT}
+    \end{minipage}
+    \caption{CKA between different models (Walker2D \& State).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtgpt2_walker2d_medium_666_reward.png}
+        \subcaption{Random Init. vs GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtigpt_walker2d_medium_666_reward.png}
+        \subcaption{Random Init. vs iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2igpt_walker2d_medium_666_reward.png}
+        \subcaption{GPT2 vs iGPT}
+    \end{minipage}
+    \caption{CKA between different models (Walker2D \& Return-to-go).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtgpt2_walker2d_medium_666_action.png}
+        \subcaption{Random Init. vs GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtigpt_walker2d_medium_666_action.png}
+        \subcaption{Random Init. vs iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2igpt_walker2d_medium_666_action.png}
+        \subcaption{GPT2 vs iGPT}
+    \end{minipage}
+    \caption{CKA between different models (Walker2D \& Action).}
+\end{figure}
+
+\subsubsection{CKA Between Different Layers in a Model}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2gpt2_hopper_medium_666_reward.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_igptigpt_hopper_medium_666_reward.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtdt_hopper_medium_666_reward.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same model (Hopper \& Return-to-go).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2gpt2_hopper_medium_666_action.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_igptigpt_hopper_medium_666_action.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtdt_hopper_medium_666_action.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same model (Hopper \& Action).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2gpt2_halfcheetah_medium_666_state.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_igptigpt_halfcheetah_medium_666_state.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtdt_halfcheetah_medium_666_state.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same model (HalfCheetah \& State).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2gpt2_halfcheetah_medium_666_reward.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_igptigpt_halfcheetah_medium_666_reward.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtdt_halfcheetah_medium_666_reward.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same model (HalfCheetah \& Return-to-go).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2gpt2_halfcheetah_medium_666_action.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_igptigpt_halfcheetah_medium_666_action.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtdt_halfcheetah_medium_666_action.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same model (HalfCheetah \& Action).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2gpt2_walker2d_medium_666_state.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_igptigpt_walker2d_medium_666_state.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtdt_walker2d_medium_666_state.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same model (Walker2D \& State).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2gpt2_walker2d_medium_666_reward.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_igptigpt_walker2d_medium_666_reward.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtdt_walker2d_medium_666_reward.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same model (Walker2D \& Return-to-go).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_gpt2gpt2_walker2d_medium_666_action.png}
+        \subcaption{GPT2}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_igptigpt_walker2d_medium_666_action.png}
+        \subcaption{iGPT}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_40_40_dtdt_walker2d_medium_666_action.png}
+        \subcaption{Random Initialization}
+    \end{minipage}
+    \caption{CKA of different layers in the same model (Walker2D \& Action).}
+\end{figure}
+
+
+\subsection{Mutual Information Between Hidden Representation and Data}
+\label{appendix:results-for-other-conditions-mutual-information}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_x_0.mlp.dropout_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \subcaption{$\hat{I}(X; T)$}
+    \end{minipage}
+    \begin{minipage}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_y_0.mlp.dropout_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \subcaption{$\hat{I}(Y; T)$}
+    \end{minipage}
+    \caption{Estimated mutual information between data and hidden representation (Shallow).}
+    \label{fig:mutual_information_context_shallow}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_x_11.mlp.dropout_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \subcaption{$\hat{I}(X; T)$}
+    \end{minipage}
+    \begin{minipage}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_y_11.mlp.dropout_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \subcaption{$\hat{I}(Y; T)$}
+    \end{minipage}
+    \caption{Estimated mutual information between data and hidden representation (Deep).}
+    \label{fig:mutual_information_context_deep}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_x_6.mlp.dropout_40_gpt2_igpt_dt_hopper_medium_42.pdf}
+    \subcaption{$\hat{I}(X; T)$}
+    \end{minipage}
+    \begin{minipage}[b]{0.45\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_y_6.mlp.dropout_40_gpt2_igpt_dt_hopper_medium_42.pdf}
+    \subcaption{$\hat{I}(Y; T)$}
+    \end{minipage}
+    \caption{Estimated mutual information between data and hidden representation (Middle, Seed = 42).}
+    \label{fig:mutual_information_context_middle_42}
+\end{figure}
+
+
+\subsection{Parameter Similarity}
+\label{appendix:results-for-other-conditions-parameter-similarity}
+
+\subsubsection{Parameter Similarity (Other Environment)}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramdist_0_40_gpt2_igpt_dt_halfcheetah_medium_666.pdf}
+    \caption{L2 distance of each parameter between pre post-fine-tuning (HalfCheetah).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramdist_0_40_gpt2_igpt_dt_walker2d_medium_666.pdf}
+    \caption{L2 distance of each parameter between pre post-fine-tuning (Walker2D).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramcos_0_40_gpt2_igpt_dt_halfcheetah_medium_666.pdf}
+    \caption{Cosine similarity of each parameter between pre post-fine-tuning (HalfCheetah).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramcos_0_40_gpt2_igpt_dt_walker2d_medium_666.pdf}
+    \caption{Cosine similarity of each parameter between pre post-fine-tuning (Walker2D).}
+\end{figure}
+
+\subsubsection{Parameter Similarity (Seed = 42)}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramdist_0_40_gpt2_igpt_dt_hopper_medium_42.pdf}
+    \caption{L2 distance of each parameter between pre post-fine-tuning (Hopper, Seed = 42).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramdist_0_40_gpt2_igpt_dt_halfcheetah_medium_42.pdf}
+    \caption{L2 distance of each parameter between pre post-fine-tuning (HalfCheetah, Seed = 42).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramdist_0_40_gpt2_igpt_dt_walker2d_medium_42.pdf}
+    \caption{L2 distance of each parameter between pre post-fine-tuning (Walker2D, Seed = 42).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramcos_0_40_gpt2_igpt_dt_hopper_medium_42.pdf}
+    \caption{Cosine similarity of each parameter between pre post-fine-tuning (Hopper, Seed = 42).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramcos_0_40_gpt2_igpt_dt_halfcheetah_medium_42.pdf}
+    \caption{Cosine similarity of each parameter between pre post-fine-tuning (HalfCheetah, Seed = 42).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramcos_0_40_gpt2_igpt_dt_walker2d_medium_42.pdf}
+    \caption{Cosine similarity of each parameter between pre post-fine-tuning (Walker2D, Seed = 42).}
+\end{figure}
+
+\subsection{Gradient Analysis}
+\label{appendix:results-for-other-conditions-gradient-analysis}
+
+\subsubsection{Gradient Analysis (Other Environments)}
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorms_1_gpt2_igpt_dt_halfcheetah_medium_666.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorms_1_gpt2_igpt_dt_walker2d_medium_666.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Gradient norm.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/mingradcossim_1_gpt2_igpt_dt_halfcheetah_medium_666.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/mingradcossim_1_gpt2_igpt_dt_walker2d_medium_666.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Minimum gradient cosine similarity.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_ratio_1_igpt_halfcheetah_medium_666.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_ratio_1_igpt_walker2d_medium_666.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{iGPT's gradient norm ratio.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_1_igpt_halfcheetah_medium_666.pdf}
+    \caption{Gradient norm of iGPT's each parameter at epoch 1. (HalfCheetah)}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_1_igpt_walker2d_medium_666.pdf}
+    \caption{Gradient norm of iGPT's each parameter at epoch 1. (Walker2D)}
+\end{figure}
+
+\subsubsection{Gradient Analysis (Seed = 42)}
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorms_1_gpt2_igpt_dt_hopper_medium_42.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorms_1_gpt2_igpt_dt_halfcheetah_medium_42.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorms_1_gpt2_igpt_dt_walker2d_medium_42.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Gradient norm (Seed = 42).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/mingradcossim_1_gpt2_igpt_dt_hopper_medium_42.pdf}
+        \subcaption{Hopper (Seed = 42)}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/mingradcossim_1_gpt2_igpt_dt_halfcheetah_medium_42.pdf}
+        \subcaption{HalfCheetah (Seed = 42)}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/mingradcossim_1_gpt2_igpt_dt_walker2d_medium_42.pdf}
+        \subcaption{Walker2D (Seed = 42)}
+    \end{minipage}
+    \caption{Minimum gradient cosine similarity (seed = 42).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_ratio_1_igpt_hopper_medium_42.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_ratio_1_igpt_halfcheetah_medium_42.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_ratio_1_igpt_walker2d_medium_42.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{iGPT's gradient norm ratio. (Seed = 42)}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_1_igpt_hopper_medium_42.pdf}
+    \caption{Gradient norm of iGPT's each parameter at epoch 1. (Hopper, Seed = 42)}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_1_igpt_halfcheetah_medium_42.pdf}
+    \caption{Gradient norm of iGPT's each parameter at epoch 1. (HalfCheetah, Seed = 42)}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_1_igpt_walker2d_medium_42.pdf}
+    \caption{Gradient norm of iGPT's each parameter at epoch 1. (Walker2D, Seed = 42)}
+\end{figure}
+
+\subsection{Fine-Tuning with No Context Information}
+\label{apendx:results-for-other-conditions-fine-tuning-with-no-context-information}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_gpt2_dt_K1_hopper_medium_42.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_gpt2_dt_K1_halfcheetah_medium_42.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_gpt2_dt_K1_walker2d_medium_42.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Mean return throughout fine-tuning when access to the context information is prohibited (seed = 42).}
+    \label{fig:return-mean-42}
+\end{figure}
+
+\begin{table}[H]
+  \caption{Normalized return of $K = 1$ (seed = 666 \& 42).}
+  \label{table:k=1-666-42}
+  \centering
+  \scalebox{0.8}{
+  \begin{tabular}{llll}
+    \toprule
+    \cmidrule(r){1-4}
+    Dataset     & Environment & GPT2 & Random Init \\
+    \midrule
+    \multirow{3}{*}{Medium} & Hopper & {$81.3 \pm 2.5$} & {$-0.3 \pm 0.1$} \\
+    & HalfCheetah     & {$47.9 \pm 0.1$} & {$49.2 \pm 0.1$} \\
+    & Walker 2D     & {$71.2 \pm 2.2$} & {$35.6 \pm 33.5$} \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table}
+
+\subsection{More In-Depth Analysis of Context Dependence}
+\label{appendix:results-for-other-conditions-internal-analysis-to-see-the-dependence-on-context}
+
+\subsubsection{Replacement by the Pre-Trained Block}
+\label{appendix:results-for-other-conditions-replacement}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/actionerror_block_gpt2_dt_K1_halfcheetah_medium_666.pdf}
+        \subcaption{Action error}
+    \end{minipage}
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_block_gpt2_dt_K1_halfcheetah_medium_666.pdf}
+        \subcaption{Mean return}
+    \end{minipage}
+    \caption{Learning curve when only a block is pre-trained (HalfCheetah, Seed = 666).}
+    \label{fig:learning_curve_halfcheetah}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/actionerror_block_gpt2_dt_K1_walker2d_medium_666.pdf}
+        \subcaption{Action error}
+    \end{minipage}
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_block_gpt2_dt_K1_walker2d_medium_666.pdf}
+        \subcaption{Mean return}
+    \end{minipage}
+    \caption{Learning curve when only a block is pre-trained (Walker2D, Seed = 666).}
+    \label{fig:learning_curve_walker2d}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/actionerror_block_gpt2_dt_K1_hopper_medium_42.pdf}
+        \subcaption{Action error}
+    \end{minipage}
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_block_gpt2_dt_K1_hopper_medium_42.pdf}
+        \subcaption{Mean return}
+    \end{minipage}
+    \caption{Learning curve when only a block is pre-trained (Hopper, Seed = 42).}
+    \label{fig:learning_curve_hopper_42}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/actionerror_block_gpt2_dt_K1_halfcheetah_medium_42.pdf}
+        \subcaption{Action error}
+    \end{minipage}
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_block_gpt2_dt_K1_halfcheetah_medium_42.pdf}
+        \subcaption{Mean return}
+    \end{minipage}
+    \caption{Learning curve when only a block is pre-trained (HalfCheetah, Seed = 42).}
+    \label{fig:learning_curve_halfcheetah_42}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/actionerror_block_gpt2_dt_K1_walker2d_medium_42.pdf}
+        \subcaption{Action error}
+    \end{minipage}
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_block_gpt2_dt_K1_walker2d_medium_42.pdf}
+        \subcaption{Mean return}
+    \end{minipage}
+    \caption{Learning curve when only a block is pre-trained (Walker2D, Seed = 42).}
+    \label{fig:learning_curve_walker2d_42}
+\end{figure}
+
+\subsubsection{Attention Distance Analysis}
+\label{appendix:results-for-other-conditions-attention-distance}
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_1_gpt2_dt_hopper_medium_666_K1.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_1_gpt2_dt_halfcheetah_medium_666_K1.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_1_gpt2_dt_walker2d_medium_666_K1.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Attention distance gap between epoch 0 and epoch 1.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_10_gpt2_dt_hopper_medium_666_K1.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_10_gpt2_dt_halfcheetah_medium_666_K1.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_10_gpt2_dt_walker2d_medium_666_K1.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Attention distance gap between epoch 0 and epoch 10.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_40_gpt2_dt_hopper_medium_666_K1.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_40_gpt2_dt_halfcheetah_medium_666_K1.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_40_gpt2_dt_walker2d_medium_666_K1.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Attention distance gap between epoch 0 and epoch 40.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_4_gpt2_dt_hopper_medium_42_K1.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_4_gpt2_dt_halfcheetah_medium_42_K1.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_4_gpt2_dt_walker2d_medium_42_K1.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Attention distance gap between epoch 0 and epoch 4 (seed = 42).}
+\end{figure}
+
+\section{Details for Computation}
+\label{appendix:details-for-computation}
+The computational environment for our experiments is as follows:
+\begin{itemize}
+    \item GPU: NVIDIA GeForce GTX TITAN X $\times$ 2GPU.
+    \item CPU: Intel Xeon E5-2620 v3 2.4 GHz, 6 Cores $\times$ 2CPU.
+    \item software: Ubuntu 20.04.4, GCC 9.4.0, CUDA 11.6.
+\end{itemize}
+The computational time of fine-tuning for 40 epochs is around from 24 to 72 hours for context length $K = 20$ and around from 7 to 48 hours for context length $K = 1$ per run.
+
+
+\section{Licences of Assets Used for Our Experiments}
+\label{appendix:licence}
+\subsection{Dataset}
+We use the offline RL dataset of Mujoco in D4RL \cite{fu2020d4rl}. The license of the dataset in D4RL is a  Creative Commons Attribution 4.0 License (CC BY). Thus, we can use this dataset with no consent as long as we follow the term of use. 
+\subsection{Code}
+The code we used does not require special consent from authors as long as we follow the terms of use. Their licenses are as follows:
+\begin{itemize}
+\item \href{https://github.com/machelreid/can-wikipedia-help-offline-rl}{https://github.com/machelreid/can-wikipedia-help-offline-rl}: MIT Licence.
+\item \href{https://github.com/rail-berkeley/d4rl}{https://github.com/rail-berkeley/d4rl}: Apache License 2.0.
+\item \href{https://github.com/google-research/google-research/tree/master/representation_similarity}{https://github.com/google-research/google-research/tree/master/representation\_similarity}: Apache License 2.0.
+\item \href{https://github.com/gtegner/mine-pytorch}{https://github.com/gtegner/mine-pytorch}: MIT License.
+\end{itemize}
+
+\section{Note on the Role of Each Sub-Sections in Section \ref{section:results-and-analysis}}
+
+Sections \ref{section:activation-similarity} and \ref{section:mutual-information-between-hidden-representation-and-input-and-label} show what may \textit{not} be a cause of the good performance. In other words, these sections eliminate some seemingly possible causes of good performance of language-pre-trained models, respectively. These analyses further highlight the importance of attention distance for performance. Without the analysis of Section \ref{section:activation-similarity}, we cannot exclude the possibility that good performance comes from re-using pre-trained representation \textit{as well}, which is common in the uni-modal case as we explained in Section \ref{section:activation-similarity}. Similarly, without the analysis of Section \ref{section:mutual-information-between-hidden-representation-and-input-and-label}, the performance can benefit from fitting better into training data \textit{as well}. In that case, it would be less clear whether utilizing some prior knowledge is solely important. Sections \ref{section:gradient-analysis}, \ref{section:dependency-on-context-informaiton}, \ref{section:replacement}, and \ref{section:attention-distance} discuss what may be a cause of the good performance, as summarized at the end of Section \ref{section:results-and-analysis}. Section \ref{section:parameter-similarity} provides complementary findings for these sections. For example, the existence of some unchanged parameters implies the possibility that some information is re-used, while the relatively larger change in only shallower layers of pre-trained models partially supports that these unchanged parameters do not seem to contradict with changed representation observed in Section \ref{section:activation-similarity}, as explained in Appendix \ref{appendix:note-on-relationship-between-parameter-change-and-representation-change}.
+
+\section{Note on Relationship Between Parameter Change and Representation Change}
+\label{appendix:note-on-relationship-between-parameter-change-and-representation-change}
+
+In Section \ref{section:activation-similarity} we say that \textit{representation} in some layers of the pre-trained model changes, while in Section \ref{section:parameter-similarity} we say that \textit{parameters} of them in some layers do not change that much, or vice versa for the randomly initialized model. These observations of Sections \ref{section:activation-similarity} and \ref{section:parameter-similarity} are not necessarily contradictory because the change of parameters in layer $\ell$ does not correspond one-to-one with that in representation in the layer.
+
+First, the representation of layer $\ell$ is affected by all parameters and input data prior to layer $\ell$. So, even if the parameters of layer $\ell$ have not changed, if the parameters before layer $\ell$ have changed, the representation of layer $\ell$ may change. Second, since not all of the parameters of a neural network necessarily contribute to the output, the output of a layer may not change even if some parameters of that layer change. For example, if the input value to ReLU is negative, the output will remain 0 no matter how much the parameters involved change. So, for example, it is possible that even if the parameters of the $\ell$-layer change, the representation of the $\ell$-layer remains the same. Another example is when the values of two weights $w_1^\ell$ and $w_2^\ell$ in layer $\ell$ do not change the output of the vanilla feed-forward network because of its symmetry. 
+
+Another possible cause of this observation unique to the current analysis is that we use CKA to measure representational similarity. CKA is designed to be invariant to some transformations on the representation matrix \cite{kornblith2019similarity}. Thus, different representation matrix is regarded as the same under these transformations even when parameters are changed.
+
+
+\section{Note on Why Better Action Prediction Does Not Always Result in Better Return}
+\label{appendix:note-on-why-better-action-prediction-not-always-result-in-better-return}
+
+In Section \ref{section:mutual-information-between-hidden-representation-and-input-and-label}, we explained that randomly initialized models seem to predict action better, while in Table \ref{table:sanity-check}, they perform worse than GPT2. We will add a possible explanation of why better action prediction not necessarily comes to a better return.
+
+The most likely cause of this observation is the current problem setup. As mentioned in Appendix \ref{appendix:training-detail}, the \textit{medium} dataset is early stopped and thus does not necessarily converge to an optimal policy. This means that if the model accurately learns trajectory and predicts the next action, it does not always mean that it is the best action. Hence, we can see that a low action error does not necessarily mean a large mean return. However, We do not believe that the use of medium will hurt the validity of the analysis using this data since this dataset is not that pathological.
+
+Another cause might be related to mutual information. The current analysis of mutual information shows that the representation of the hidden layer of the randomly initialized model holds more information as well of the input as well as the labels. Since the neural net representation is a vector representation if a single vector contains both types of information, these types of information might have been mixed. This may make it difficult to properly utilize only the label information, making it harder to accurately predict the action. Another possibility is that the pre-trained model and the randomly initialized model differ in terms of which input token type (return-to-go, state, or action) information they encode. For example, in Fig. \ref{fig:mutual_information_context} (b), the language pre-trained model encodes information uniformly from the same token type: the hidden representation with high mutual information is the representation corresponding to the input from the triangles, i.e., the part corresponding to the return-to-go. On the other hand, in the randomly initialized models, there are variations (triangle, circle, and cross). It was noted in a previous study that attention weight was strong between the same token types \cite{reid2022can}. Therefore, perhaps the pre-trained model might encode less total information, but the amount of information \textit{effectively} utilized is not that different. Finally, as pointed out in the explanation about the limitation, the limitations of mutual information as a metric might be a cause.
+
+\end{document}

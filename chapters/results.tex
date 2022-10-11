@@ -1,0 +1,224 @@
+\section{Results and Analysis}
+\label{section:results-and-analysis}
+
+\subsection{Activation Similarity}
+\label{section:activation-similarity}
+We first study how the pre-trained and randomly initialized models shape the representation in fine-tuning. To that end, we compare the centered kernel alignment (CKA) \cite{kornblith2019similarity} of each layer's activation between pre and post-fine-tuning, investigating how each layer's representation changes by learning offline RL data \footnote{We use the following code to compute CKA: \href{https://github.com/google-research/google-research/tree/master/representation_similarity}{https://github.com/google-research/google-research/tree/master/representation\_similarity} \cite{kornblith2019similarity}}. The CKA has been used in various studies and has provided numerous insights into the understanding of neural networks \cite{Raghu2020Rapid,wu-etal-2020-similarity,Neyshabur20,raghu2021vision,ramasesh2021anatomy}. In particular, we compute the linear CKA, following previous studies \cite{kornblith2019similarity,nguyen2021do}, for a subset of the dataset. We use the activation of each layer from the last time step of the context for return-to-go, state, and action, respectively. We show the result of state, putting the results for the others in Appendix \ref{appendix:results-for-other-conditions-activation-similarity}. Following the previous study \cite{raghu2021vision}, we compute CKA of activation not only for Transformer block output but for all internal activation of the 
+Transformer blocks. The definition of the CKA and the details are in Appendices \ref{appendix:cka} and \ref{appendix:detail-of-experiments-activation-similarity}. 
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_hopper_medium_666_state.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_halfcheetah_medium_666_state.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/cka_plot_40_gpt2_igpt_dt_walker2d_medium_666_state.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{CKA similarity of each layer between pre and post-fine-tuning.}
+    \label{fig:cka_plot_gpt2_dt}
+\end{figure}
+
+Fig. \ref{fig:cka_plot_gpt2_dt} shows the result. The y-axis is each layer's CKA between representation at pre and post-fine-tuning. The x-axis is the normalized layer index: because the number of layers of iGPT (216) is twice the others (108), we average CKA over two adjacent elements starting from the 0th layer for iGPT and align the x-axis for different models for comparison. Higher CKA means higher similarity.
+
+We observe that the CKAs of pre-trained models (GPT2 and iGPT) are uniformly low across layers except for a few layers, indicating that pre-trained models largely change representation. On the other hand, for the randomly initialized model (Random Init), the representations have a higher similarity to the initial state from the middle to the shallow layers. Also, the CKAs of the randomly initialized model seem to be higher than pre-trained models across layers. These observations indicate that the randomly initialized and pre-trained models structure their representations in very different ways. Further support for this conclusion is shown in Appendix \ref{appendix:cka-different-models}.
+
+To identify which layers have relatively higher CKA for the randomly initialized model, we obtain layer names with CKA values above a threshold (dashed line at 0.23 in Fig. \ref{fig:cka_plot_gpt2_dt} (a)). Then, we find that most of them are layer normalization layers (the list of the layer names are put in Appendix \ref{appendix:layer-name-cka}). Therefore, we can speculate that the difference in CKA similarity of layer normalization can be related to the effect of pre-training. This possibility could be supported by previous research \cite{lu2021pretrained} that reports that layer norm parameters are the most important to fine-tune.
+
+In uni-modal cases, where the statistical nature of the input data does not change significantly, previous studies have a consensus that the shallow layer acquires a more universal representation and the deep layer acquires a task-specific representation for a wide range of architectures and tasks \cite{Raghu17,Morcos_nips18,Morcos_iclr18,Raghu19,voita-etal-2019-bottom,kornblith2019similarity,Merchant20,Neyshabur20,ramasesh2021anatomy}. The finding that the language-pre-trained Transformer performs as well as or better than the baseline but largely changes the representation suggests that in multi-modal cases, something different may be happening in forming the representation than in prior studies.
+
+
+\subsection{Mutual Information Between Hidden Representation and Data}
+\label{section:mutual-information-between-hidden-representation-and-input-and-label}
+In the previous section, we observe that pre-trained models drastically change their internal representation during fine-tuning, attaining largely different representations. One possible consequence of this observation is that the pre-trained model may have adapted better to the data in the downstream tasks. To explore this possibility, we calculate estimated values of mutual information between hidden representation and data and compare them among different models. Mutual information is a well-known measure of the mutual dependence between the two random variables. Many previous studies have used this metric to investigate the extent to which neural representation encodes input and label information and provided profound insight into how neural networks work \cite{tishby2015deep,shwartz2017opening,hafez2019information,goldfeld2020information,geiger2021information}.
+
+In particular, we calculate the estimated mutual information $\hat{I}(X; T)$ between some layer representation $T$ and input data $X$, and that $\hat{I}(Y; T)$ between $T$ and label $Y$. We employ Mutual Information Neural Estimation (MINE) \cite{pmlr-v80-belghazi18a} to estimate mutual information since this method can estimate mutual information even when random vectors are continuous and have different dimensions \footnote{We use the following code for mutual information estimation: \href{https://github.com/gtegner/mine-pytorch}{https://github.com/gtegner/mine-pytorch}}. Since Decision Transformers are trained to minimize the gap between predicted action $\hat{\bm{a}}_t$ and actual action $\bm{a}_t$, we define the label as $Y = \bm{a}_t$. Unlike non-sequential models, the causal Transformer exploits past context information. Thus, denoting the input token except for $\bm{a}_K$ by $\bm{x}_t$ and the internal activation of Transformer block $l$ of the input by $T_l(\bm{x}_t)$, we compute $\hat{I}(\bm{x}_t; T_l(\bm{s}_K))$ as $\hat{I}(X; T)$ and $\hat{I}(\bm{a}_K; T_l(\bm{x}_t))$ as $\hat{I}(Y; T)$ for all token positions, $t = 0, ..., K$. We calculate these values for the shallow, middle, and deep Transformer blocks, respectively. We show the result of the middle block here and leave the remaining in Appendix \ref{appendix:results-for-other-conditions-mutual-information}. The other details are described in Appendix \ref{appendix:detail-of-experiments-mutual-information}.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_x_6.mlp.dropout_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \subcaption{$\hat{I}(X; T)$}
+    \end{minipage}
+    \begin{minipage}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figs/mi_y_6.mlp.dropout_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \subcaption{$\hat{I}(Y; T)$}
+    \end{minipage}
+    \caption{Estimated mutual information between data and hidden representation.}
+    \label{fig:mutual_information_context}
+\end{figure}
+
+Fig. \ref{fig:mutual_information_context} is the result, where Fig. \ref{fig:mutual_information_context} (a) and (b) are results of $\hat{I}(X; T)$ and $\hat{I}(Y; T)$, respectively. The markers \textit{triangle}, \textit{circle}, and \textit{cross} represent return-to-go, state, and action, respectively. The x-axis is the position of tokens in the context and the y-axis is the estimated value of mutual information. 
+
+We observe that the randomly initialized model consistently has higher mutual information both for input and label than pre-trained models. Given the catastrophic performance of iGPT, it is understandable that iGPT representations have almost no information. The result comparing GPT2 to random initialization indicates that the changed representation observed in Section \ref{section:activation-similarity} does not encode more information about the input or the label than the randomly initialized model. That is, the language-pre-trained model does well probably not because it acquires as much or more information about the data as the random initialization.
+This result suggests that although the representation has changed, there remains something unchanged, and the language-pre-trained model may leverage it to solve the offline RL task. Note that this might be affected by limitations of mutual information.
+
+We also notice that for label the language-pre-trained model has consistently higher mutual information for a specific token type (return-to-go), while that is not always the case for the randomly initialized model. This result implies that the language-pre-trained model may process the information of a specific token type at each layer for prediction. 
+
+\subsection{Parameter Similarity}
+\label{section:parameter-similarity}
+In the previous section, we discuss the possibility that the language-pre-trained Transformer exploits some pre-acquired information. To investigate this issue on a finer scale, we turn our eye from representation to parameter. We conduct parameter-level similarity analysis and investigate to what extent parameter change between pre and post-fine-tuning. In concrete, we compute $l2$ distance and cosine similarity of parameters between pre and post-fine-tuning. The details are in Appendix \ref{appendix:detail-of-experiments-parameter-similarity}.
+
+\begin{figure}[ht]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramdist_0_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \caption{$l2$ distance of each parameter between pre and post-fine-tuning.}
+    \label{fig:param-dist}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+        \includegraphics[width=\linewidth]{figs/paramcos_0_40_gpt2_igpt_dt_hopper_medium_666.pdf}
+    \caption{Cosine similarity of each parameter between pre and post-fine-tuning.}
+    \label{fig:param-cos}
+\end{figure}
+
+The result for $l2$ distance is shown in Fig. \ref{fig:param-dist} and for cosine similarity in Fig. \ref{fig:param-cos}, where the top is the result for GPT2, the middle is for iGPT, and the bottom is for random initialization. The x-axis is the parameter set index, where, from left to right, the ticks correspond to the shallowest to deepest layer parameters. For visibility, we do not show the labels for ticks and put them in Appendix \ref{appendix:parameter-name}. 
+
+Overall, We observe that $l2$ distance is small and cosine similarity is large for pre-trained models, meaning that the parameters of pre-trained models do not change that much. At first glance, this appears to contradict the results of Section \ref{section:activation-similarity}. However, prior research has reported that most of the information in Transformers propagates through skip connections \cite{raghu2021vision}. This means that, as long as the parameters of the shallow layers change, the representation of each layer may change significantly without changing the parameters of each layer. We indeed observe that the shallow layer $l2$ distance of the pre-trained model shows relatively large changes. The existence of unchanged parameters means that knowledge acquired through pre-training could be stored in those parameters.
+
+\subsection{Gradient Analysis}
+\label{section:gradient-analysis}
+In Section \ref{section:parameter-similarity}, we observe that pre-trained models' parameters don't change that much. We dig into this issue,  investigating why GPT2 and iGPT do not change parameters. To this end, we compare the gradient norm and \textit{gradient confusion} \cite{sankararaman2020impact} at the early phase of the training ($1$st epoch), discussing the training difficulty. When parameter gradients of loss for two different samples are negatively correlated, we say that there is gradient confusion. Empirically, we can measure this by the minimum gradient cosine similarity among all pairs of gradients: when the 
+value is close to 0, gradient confusion is low. The previous study showed that training is easier when gradient confusion is low \cite{sankararaman2020impact}. Because gradient clipping is used in the previous work \cite{reid2022can} and this study (the maximum norm is $0.25$), we compute the values for clipped gradients. The details are described in Appendix \ref{appendix:detail-of-experiments-gradient-analysis}.
+
+\begin{figure}[ht]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/mingradcossim_1_gpt2_igpt_dt_hopper_medium_666.pdf}
+        \caption{Grad. confusion.}
+        \label{fig:grad-confusion}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorms_1_gpt2_igpt_dt_hopper_medium_666.pdf}
+        \caption{Grad. norm.}
+        \label{fig:grad-norm}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/gradnorm_perparam_ratio_1_igpt_hopper_medium_666.pdf}
+        \caption{iGPT's grad. norm ratio.}
+        \label{fig:grad-norm-param-ratio}
+    \end{minipage}
+\end{figure}
+
+Fig. \ref{fig:grad-confusion} is the result for the gradient confusion and Fig. \ref{fig:grad-norm} is that for gradient norm. Fig. \ref{fig:grad-confusion} shows that the minimum cosine similarity of iGPT and GPT2 is similarly smaller than the randomly initialized model. This high gradient confusion probably makes pre-trained models harder to train, which explains why they change parameters less than the randomly initialized model. Fig. \ref{fig:grad-norm},
+on the other hand, shows that the gradient norm of iGPT is concentrated around the clipping threshold (0.25), while that of the others is below the bound. That is, the differences in the magnitude of the gradient are collapsed for iGPT, reducing the informational value of the gradients. 
+
+To identify which parameter of iGPT dominates the gradient norm, we compare the gradient norm of each parameter set. We calculate the gradient norm ratio of weights and biases of all parameters in all Transformer blocks. The result is shown in Fig. \ref{fig:grad-norm-param-ratio}: for visibility, we show the parameters of the first layer norm module (weights \lstinline{0.ln_1.weight} and biases \lstinline{0.ln_1.bias}) and lump the remaining results together as \lstinline{others}. The full result is shown in Appendix \ref{appendix:gradient-norm-for-each-parameter}. We observe that weights and biases of the first layer norm module dominate the norm. This result implies that the difficulty of training iGPT might partially come from the use of gradient clipping on large gradients dominated by few parameters. A complementary analysis is described in Appendix \ref{appendix:gradient-clipping}.
+
+\subsection{Fine-Tuning with No Context Information}
+\label{section:dependency-on-context-informaiton}
+In the sections up to this point, we find the possibility that the language-pre-trained model may exploit some pre-acquired information. Then what information does the language-pre-trained model exploit to solve the tasks? One possibility is the ability to handle context because Transformer is skilled at handling the relations of tokens, which enables it to perform well in a variety of 
+NLP tasks \cite{tenney2018what}. Therefore, we train the language-pre-trained and the randomly initialized model with no access to the context ($K=1$) to dig into this possibility. If a model learns efficiently without context, the model is already likely to have context-equivalent information. Details of experiments are in Appendix \ref{appendix:detail-of-experiments-dependency-on-context-informaiton}.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_gpt2_dt_K1_hopper_medium_666.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_gpt2_dt_K1_halfcheetah_medium_666.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_gpt2_dt_K1_walker2d_medium_666.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Mean return throughout fine-tuning when access to the context information is prohibited.}
+    \label{fig:return-mean}
+\end{figure}
+
+\begin{wraptable}{r}{0.45\textwidth}
+  \caption{Normalized return of $K = 1$.}
+  \label{table:k=1}
+  \centering
+  \scalebox{0.8}{
+  \begin{tabular}{llll}
+    \toprule
+    \cmidrule(r){1-4}
+    Dataset     & Environment & GPT2 & Random Init \\
+    \midrule
+    \multirow{3}{*}{Medium} & Hopper & {$83.73$} & {$-0.24$} \\
+    & HalfCheetah     & {$47.7$} & {$49.0$} \\
+    & Walker 2D     & {$69.0$} & {$69.1$} \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{wraptable}
+
+The mean return throughout training time is shown in Fig. \ref{fig:return-mean} and the normalized scores of return 
+\footnote{
+Following the previous studies \cite{fu2020d4rl,chen2021decision,reid2022can}, we report normalized scores: $100 \times \frac{\text{score} - \text{random score}}{\text{expert score} - \text{random score}}$.
+} are shown in Table \ref{table:k=1}. The solid lines in Fig. \ref{fig:return-mean} are results without context and the dashed lines for reference are those with context. From Fig. \ref{fig:return-mean}, we observe that when the context is not provided ($K=1$), the GPT2 reaches the high mean return much faster than the randomly initialized model. Furthermore, Table \ref{table:k=1} reveals that the randomly initialized model fails to learn the trajectory for a dataset (\textit{Hopper}), while the language-pre-trained model consistently achieves a comparable performance with that of the baseline result ($K=20$). That is, we observe that the language-pre-trained Transformer consistently performs more efficiently when no context is provided. This is somewhat surprising, given that previous studies have pointed out that Decision Transformer performs significantly worse with no context \cite{chen2021decision}. The result that the language-pre-trained Transformer learns efficiently as well without context as it does with context suggests that the model may have already acquired some kind of context-like information through pre-training and is utilizing it to solve the task. 
+
+\subsection{More In-Depth Analysis of Context Dependence}
+\label{section:internal-analysis-to-see-the-dependence-on-context}
+
+\subsubsection{Replacement by the Pre-Trained Block}
+\label{section:replacement}
+In the previous sections, we find that the language-pre-trained Transformer exploits context-related information to solve the task. To identify which block contains the useful information, we conduct a block replacement experiment, where we replace a Transformer block of the randomly initialized model with that of the language-pre-trained model and then fine-tune the model without context. If replacement of a block does not help training, the block probably did not learn effective information in pre-training. Because we observe in Section \ref{section:dependency-on-context-informaiton} that the early phase characterizes the difference of the models, we focus on the epochs up to 10th epoch. We explain the other details in Appendix \ref{appendix:detail-of-experiments-replacement}.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{figs/actionerror_block_gpt2_dt_K1_hopper_medium_666.pdf}
+        \subcaption{Action error}
+    \end{minipage}
+    \begin{minipage}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{figs/returnmean_block_gpt2_dt_K1_hopper_medium_666.pdf}
+        \subcaption{Mean return}
+    \end{minipage}
+    \caption{Learning curve when a single Transformer block is replaced with a pre-trained one.}
+    \label{fig:learning_curve}
+\end{figure}
+
+The result is shown in Fig. \ref{fig:learning_curve}, where (a) is the prediction error of action and (b) is the mean return 
+\footnote{
+Note that since the medium dataset we use is corrected by a sub-optimal policy, a better action error does not always result in a better return. We explain this more in detail in Appendix \ref{appendix:note-on-why-better-action-prediction-not-always-result-in-better-return}.
+}. 
+To get a rough trend, we take the exponential moving average. We observe that only when block 1 is replaced with the pre-trained block, does the action error (Fig. \ref{fig:learning_curve} (a)) and the mean return (Fig. \ref{fig:learning_curve} (b)) behave similarly to the randomly initialized model. Thus, we conclude that all blocks other than block 1 contain context-equivalent useful information to solve tasks. The findings that replacing a single block with the pre-trained one improves learning efficiency and that effective information is distributed across layers alone are surprising enough. This could be related to the dominant role of skip connections for information propagation \cite{raghu2021vision} or the nature of non-monotonic change in the content each layer processes \cite{liu-etal-2019-linguistic} in Transformers. We show the result for Hopper since the trend explained above is most pronounced. For other environments, although the similarity between the random model and block1 is much weaker, the observation that block 1 is not good is consistent. Results for other environments are in Appendix \ref{appendix:results-for-other-conditions-replacement}.
+
+\subsubsection{Attention Distance Analysis}
+\label{section:attention-distance}
+In previous sections, we find that the information improving learning efficiency is preserved in all blocks only in the varying amount and that is probably context-related. To further confirm that the context-like information is indeed preserved, we investigate how the model processes context by calculating the attention distance \cite{dosovitskiy2020image} of each Transformer block for the result of Section \ref{section:dependency-on-context-informaiton}. Attention distance is the average distance between key and query weighted by attention weight. Previous studies successfully used this measure to reveal how locally Transformers process context \cite{raghu2021vision,dosovitskiy2020image}. Attention distance will elucidate how far away each model processes the tokens of input.
+
+In particular, we compute the gap ($|d_{att}(epoch) - d_{att}(0)|$) between attention distance at the initial state ($d_{att}(0)$) and that at an epoch ($d_{att}(epoch)$) to study to what extent the model preserves the way to utilize context. If the gap is smaller, it means that the attention distance is more preserved. To clarify the difference between the language-pre-trained model and the randomly initialized model, we compare the gap between epoch 0 and 4 since at epoch 4 for all environments the randomly initialized model still produces a low return, while the GPT2 achieves a high return (Fig. \ref{fig:return-mean}). The detail of the setup and results for other epochs are shown in Appendices \ref{appendix:detail-of-experiments-attention-distance} and \ref{appendix:results-for-other-conditions-attention-distance}. 
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_4_gpt2_dt_hopper_medium_666_K1.pdf}
+        \subcaption{Hopper}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_4_gpt2_dt_halfcheetah_medium_666_K1.pdf}
+        \subcaption{HalfCheetah}
+    \end{minipage}
+    \begin{minipage}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figs/att_dist_diff_0_4_gpt2_dt_walker2d_medium_666_K1.pdf}
+        \subcaption{Walker2D}
+    \end{minipage}
+    \caption{Attention distance gap between epoch 0 and epoch 4.}
+    \label{fig:attention_distance_before_after_epoch_4}
+\end{figure}
+
+Results are shown in Fig. \ref{fig:attention_distance_before_after_epoch_4}, where the x-axis is the Transformer block index and the y-axis is the gap between attention distances. Fig. \ref{fig:attention_distance_before_after_epoch_4} (a), shows that the attention gaps of GPT2 except for block 1 are small, indicating that attention distances are kept from the pre-training in these blocks. Taken together with the finding of Section \ref{section:replacement} that blocks other than block 1 improve learning efficiency, these preserved attention distances are likely to positively affect fine-tuning. This result further supports the hypothesis that language-pre-training brings the model context-like information and the use of this information allows efficient learning.
+
+We also notice the outstanding contrast that gaps of language-pre-trained models are almost zero except for block 1 (and block 2 for HalfCheetah), while those for the randomly initialized model are large. This trend is clearer from middle to deep blocks (3 to 10) for all environments. Turning an eye to Fig. \ref{fig:learning_curve} (a), we notice that the action error of these blocks decreases faster than the other block (0 to 2 and 11). Thus, we conclude that the pre-trained context-like information could help the training by enabling the model to predict action more accurately.
+
+We summarize findings of Section \ref{section:results-and-analysis} with particular attention to the implication for performance:
+\begin{itemize}
+    \item 5.1: Re-using representation is not the cause of the good performance of GPT2.
+    \item 5.2: Fitting to data better is not the cause of the good performance of GPT2.
+    \item 5.3: The good performance of GPT2 might come from some unchanged parameters.
+    \item 5.4: Gradient clipping and large gradient might be a cause of the bad performance of iGPT.
+    \item 5.5: GPT2 can learn efficiently even without the context provided.
+    \item 5.6.1: Even a single pre-trained Transformer block makes training more efficient.
+    \item 5.6.2: A cause of the good performance of GPT2 is a pre-acquired way to use context.
+\end{itemize}

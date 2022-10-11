@@ -1,0 +1,12 @@
+\section{Discussion}
+\label{section:discussion}
+\paragraph{Conclusion}
+We have examined how pre-training on data of different modalities influences fine-tuning to offline RL. Internal representation analysis shows that pre-trained Transformer largely changes its representation while attaining less knowledge of the downstream task. By the analysis of change in parameters, we find that pre-trained Transformers do not change parameters that much and that the bad performance of the image-pre-trained model might partially come from gradient clipping on the large gradient dominated by a few parameters. Fine-tuning models with no context, we find that the language-pre-trained model can efficiently solve offline RL tasks even without context. Follow-up analysis supports the hypothesis that language pre-training probably gives the Transformer context-like information and the model exploits it to tackle the offline RL tasks.
+
+\paragraph{Discussion}
+The finding in Section \ref{section:attention-distance} of the usefulness of middle blocks is interesting, given that the contextual model's middle layers contain syntactic information \cite{hewitt-manning-2019-structural,goldberg2019assessing} and are most transferable \cite{liu-etal-2019-linguistic}. This implies that the syntactic capability of Transformers could be related to the performance on offline RL. The role of layer norm is also noteworthy as we observe that it may characterize the behavior in fine-tuning (Sections \ref{section:activation-similarity} and \ref{section:gradient-analysis}). Studying the pre-training on other RL tasks is also critical to understanding the benefit of pre-training in RL. Many studies of human evolution and development point to a close relationship between language and behavior \cite{lashley1951,greenfield1991language}. Hence, studying the relationship between these modalities matters to create human-like intelligence that handles language. A more detailed analysis of this relationship is a promising research direction.
+
+\paragraph{Limitation and Impact}
+We consider only a random seed and a few datasets from OpenAI Gym for analysis. 
+Thus, using diverse data is important and checking if the claim holds with the average results with many more seeds is crucial.
+Also, the validity of the metrics we used should be critically examined since different results could be obtained by using more carefully designed ones. Because this work is fundamental research, no immediate serious negative societal impact is expected.

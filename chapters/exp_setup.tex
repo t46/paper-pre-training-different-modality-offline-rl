@@ -1,0 +1,29 @@
+\section{Experimental Setup}
+\label{subsection:experimental-setup}
+
+Unless otherwise noted, all of our experimental setups, including model configuration, dataset, and hyperparameters follow the previous work \cite{reid2022can} \footnote{We use the following code for experiments: \href{https://github.com/machelreid/can-wikipedia-help-offline-rl}{https://github.com/machelreid/can-wikipedia-help-offline-rl}}. The sanity check that our trained models achieve comparable performance with the previous work is shown in Table \ref{table:sanity-check}. Details are in Appendix \ref{appendix:fine-tuning-result}. 
+
+We compare the model with GPT2 architecture \cite{radford2019language} that is randomly initialized (\textit{randomly initialized model}), pre-trained with language data (\textit{GPT2}), and with image data (\textit{iGPT}) to study the effect of pre-training. Pre-trained models are from the \lstinline{Transformers} library from HuggingFace \cite{wolf-etal-2020-transformers}. Like the previous study, the model code for GPT2 and iGPT are \lstinline{gpt2} and \lstinline{openai/imagegpt-small}.
+
+For offline RL tasks, we use some of Mujoco tasks \cite{todorov2012mujoco} in OpenAI Gym \cite{brockman2016openai} provided by D4RL \cite{fu2020d4rl} \footnote{\href{https://github.com/rail-berkeley/d4rl}{https://github.com/rail-berkeley/d4rl}}, an offline RL dataset library. Specifically, we employ \textit{medium} datasets of \textit{HalfCheetah}, \textit{Walker2d}, and \textit{Hopper} environments. Unless otherwise specified, we show the result for \textit{Hopper-medium}. We put the results for other environments in Appendix \ref{appendix:results-for-other-conditions}.
+ 
+Following the previous study \cite{reid2022can}, we train the models for 40 epochs, each of which consists of 2500 steps. In the following sections, we refer to the 40th epoch checkpoint as the \textit{post-fine-tuning model} and the 0th epoch model (the initial state) as the \textit{pre- fine-tuning model}. The training details, including hyperparameters and the optimizer, are detailed in Appendix \ref{appendix:training-detail}.
+
+\begin{table}[H]
+  \caption{Normalized mean return.}
+  \label{table:sanity-check}
+  \centering
+  \scalebox{0.8}{
+  \begin{tabular}{llllllll}
+    \toprule
+    \cmidrule(r){1-8}
+    Dataset     & Environment & GPT2 (\cite{reid2022can}) & iGPT (\cite{reid2022can}) & DT (\cite{reid2022can})  & GPT2 (ours) & iGPT (ours) & Random Init (ours) \\
+    \midrule
+    \multirow{3}{*}{Medium} & Hopper & {$79.1 \pm  1.1$} & {$5.7 \pm  1.5$} & {$67.6$}  & {$79.5 \pm  1.3$} & {$2.6 \pm 0.3$} & {$67.7 \pm 3.0$} \\
+    & HalfCheetah     & {$42.8 \pm  0.1$} & {$1.5 \pm  0.1$} & {$42.6$} & {$48.4 \pm 0.0$} & {$1.3 \pm 0.1$} & {$48.6 \pm 0.2$}  \\
+    & Walker 2D     & {$78.3 \pm  1.5$} & {$0.4 \pm  0.4$} & {$74.0$} & {$71.2 \pm 1.3$} & {$4.3 \pm 1.9$} & {$71.0 \pm 0.5$}  \\
+    \bottomrule
+  \end{tabular}
+}
+\end{table}
+
