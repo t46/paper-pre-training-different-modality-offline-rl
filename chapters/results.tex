@@ -190,7 +190,7 @@ In previous sections, we find that the information improving learning efficiency
 
 In particular, we compute the gap ($|d_{att}(epoch) - d_{att}(0)|$) between attention distance at the initial state ($d_{att}(0)$) and that at an epoch ($d_{att}(epoch)$) to study to what extent the model preserves the way to utilize context. If the gap is smaller, it means that the attention distance is more preserved. To clarify the difference between the language-pre-trained model and the randomly initialized model, we compare the gap between epoch 0 and 4 since at epoch 4 for all environments the randomly initialized model still produces a low return, while the GPT2 achieves a high return (Fig. \ref{fig:return-mean}). The detail of the setup and results for other epochs are shown in Appendices \ref{appendix:detail-of-experiments-attention-distance} and \ref{appendix:results-for-other-conditions-attention-distance}. 
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \begin{minipage}[b]{0.32\linewidth}
         \includegraphics[width=\linewidth]{figs/att_dist_diff_0_4_gpt2_dt_hopper_medium_666_K1.pdf}
