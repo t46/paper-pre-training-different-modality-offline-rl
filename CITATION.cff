@@ -1,0 +1,6 @@
+cff-version: 1.2.0
+authors:
+- family-names: "t46"
+title: "On the Effect of Pre-training for Transformer in Different Modality on Offline Reinforcement Learning"
+date-released: 2022-10-12
+url: "{https://github.com/t46/paper-pre-training-different-modality-offline-rl/ADD_COMMIT_HASH}"
